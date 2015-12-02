@@ -29,6 +29,7 @@ the technique.
 from __future__ import print_function
 
 import numpy as np
+import csv
 
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.datasets import fetch_20newsgroups
@@ -106,19 +107,21 @@ class SubjectBodyExtractor(BaseEstimator, TransformerMixin):
     def transform(self, posts):
         features = np.recarray(shape=(len(posts),),
                                dtype=[('subject', object), ('body', object)])
-        for i, text in enumerate(posts):
-            headers, _, bod = text.partition('\n\n')
-            bod = strip_newsgroup_footer(bod)
-            bod = strip_newsgroup_quoting(bod)
-            features['body'][i] = bod
+        
+        import pdb; pdb.set_trace()
+        # for i, text in enumerate(posts):
+        #     headers, _, bod = text.partition('\n\n')
+        #     bod = strip_newsgroup_footer(bod)
+        #     bod = strip_newsgroup_quoting(bod)
+        #     features['body'][i] = bod
 
-            prefix = 'Subject:'
-            sub = ''
-            for line in headers.split('\n'):
-                if line.startswith(prefix):
-                    sub = line[len(prefix):]
-                    break
-            features['subject'][i] = sub
+        #     prefix = 'Subject:'
+        #     sub = ''
+        #     for line in headers.split('\n'):
+        #         if line.startswith(prefix):
+        #             sub = line[len(prefix):]
+        #             break
+        #     features['subject'][i] = sub
 
         return features
 
@@ -131,11 +134,11 @@ pipeline = Pipeline([
     ('union', FeatureUnion(
         transformer_list=[
 
-            # Pipeline for pulling features from the post's subject line
-            ('subject', Pipeline([
-                ('selector', ItemSelector(key='subject')),
-                ('tfidf', TfidfVectorizer(min_df=50)),
-            ])),
+            # # Pipeline for pulling features from the post's subject line
+            # ('subject', Pipeline([
+            #     ('selector', ItemSelector(key='subject')),
+            #     ('tfidf', TfidfVectorizer(min_df=50)),
+            # ])),
 
             # Pipeline for standard bag-of-words model for body
             ('body_bow', Pipeline([
@@ -144,20 +147,20 @@ pipeline = Pipeline([
                 ('best', TruncatedSVD(n_components=50)),
             ])),
 
-            # Pipeline for pulling ad hoc features from post's body
-            ('body_stats', Pipeline([
-                ('selector', ItemSelector(key='body')),
-                ('stats', TextStats()),  # returns a list of dicts
-                ('vect', DictVectorizer()),  # list of dicts -> feature matrix
-            ])),
+            # # Pipeline for pulling ad hoc features from post's body
+            # ('body_stats', Pipeline([
+            #     ('selector', ItemSelector(key='body')),
+            #     ('stats', TextStats()),  # returns a list of dicts
+            #     ('vect', DictVectorizer()),  # list of dicts -> feature matrix
+            # ])),
 
         ],
 
         # weight components in FeatureUnion
         transformer_weights={
-            'subject': 0.8,
+            # 'subject': 0.8,
             'body_bow': 0.5,
-            'body_stats': 1.0,
+            # 'body_stats': 1.0,
         },
     )),
 
@@ -165,17 +168,19 @@ pipeline = Pipeline([
     ('svc', SVC(kernel='linear')),
 ])
 
-# limit the list of categories to make running this exmaple faster.
-categories = ['alt.atheism', 'talk.religion.misc']
-train = fetch_20newsgroups(random_state=1,
-                           subset='train',
-                           categories=categories,
-                           )
-test = fetch_20newsgroups(random_state=1,
-                          subset='test',
-                          categories=categories,
-                          )
+train = list(csv.DictReader(open('data/train_multi.csv', 'r')))
+test = list(csv.DictReader(open('data/test_multi.csv', 'r')))
 
-pipeline.fit(train.data, train.target)
+# train = fetch_20newsgroups(random_state=1,
+#                            subset='train',
+#                            categories=categories,
+                           # )
+# test = fetch_20newsgroups(random_state=1,
+#                           subset='test',
+#                           categories=categories,
+#                           )
+
+# Accepts two lists on equal length
+pipeline.fit(train[0]['data'], train[0]['target'])
 y = pipeline.predict(test.data)
 print(classification_report(y, test.target))
