@@ -30,6 +30,7 @@ from __future__ import print_function
 
 import numpy as np
 import csv
+import ast
 
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.datasets import fetch_20newsgroups
@@ -41,7 +42,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import classification_report
 from sklearn.pipeline import FeatureUnion
 from sklearn.pipeline import Pipeline
-from sklearn.svm import SVC
+from sklearn.linear_model import SGDClassifier
 
 
 class ItemSelector(BaseEstimator, TransformerMixin):
@@ -105,24 +106,14 @@ class SubjectBodyExtractor(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, posts):
+        # posts = ast.literal_eval(posts)
         features = np.recarray(shape=(len(posts),),
-                               dtype=[('subject', object), ('body', object)])
-        
-        import pdb; pdb.set_trace()
-        # for i, text in enumerate(posts):
-        #     headers, _, bod = text.partition('\n\n')
-        #     bod = strip_newsgroup_footer(bod)
-        #     bod = strip_newsgroup_quoting(bod)
-        #     features['body'][i] = bod
+                               dtype=[('text', object), ('feature_1', object)])
 
-        #     prefix = 'Subject:'
-        #     sub = ''
-        #     for line in headers.split('\n'):
-        #         if line.startswith(prefix):
-        #             sub = line[len(prefix):]
-        #             break
-        #     features['subject'][i] = sub
-
+        for ii in range(len(posts)):
+            features['text'][ii] = posts[ii][0]
+            features['feature_1'][ii] = posts[ii][1] 
+       
         return features
 
 
@@ -135,14 +126,14 @@ pipeline = Pipeline([
         transformer_list=[
 
             # # Pipeline for pulling features from the post's subject line
-            # ('subject', Pipeline([
-            #     ('selector', ItemSelector(key='subject')),
-            #     ('tfidf', TfidfVectorizer(min_df=50)),
-            # ])),
+            ('subject', Pipeline([
+                ('selector', ItemSelector(key='feature_1')),
+                ('tfidf', TfidfVectorizer(min_df=50)),
+            ])),
 
             # Pipeline for standard bag-of-words model for body
             ('body_bow', Pipeline([
-                ('selector', ItemSelector(key='body')),
+                ('selector', ItemSelector(key='text')),
                 ('tfidf', TfidfVectorizer()),
                 ('best', TruncatedSVD(n_components=50)),
             ])),
@@ -159,28 +150,29 @@ pipeline = Pipeline([
         # weight components in FeatureUnion
         transformer_weights={
             # 'subject': 0.8,
-            'body_bow': 0.5,
+            'body_bow': 1.0,
             # 'body_stats': 1.0,
         },
     )),
 
     # Use a SVC classifier on the combined features
-    ('svc', SVC(kernel='linear')),
+    ('sgd', SGDClassifier(loss='log', penalty='l2', shuffle=True)),
 ])
 
 train = list(csv.DictReader(open('data/train_multi.csv', 'r')))
 test = list(csv.DictReader(open('data/test_multi.csv', 'r')))
 
-# train = fetch_20newsgroups(random_state=1,
-#                            subset='train',
-#                            categories=categories,
-                           # )
-# test = fetch_20newsgroups(random_state=1,
-#                           subset='test',
-#                           categories=categories,
-#                           )
+# Convert from String to List
+train_data = ast.literal_eval(train[0]['data'])
+train_target = ast.literal_eval(train[0]['target'])
 
-# Accepts two lists on equal length
-pipeline.fit(train[0]['data'], train[0]['target'])
-y = pipeline.predict(test.data)
-print(classification_report(y, test.target))
+test_data = ast.literal_eval(test[0]['data'])
+test_target = ast.literal_eval(test[0]['target'])
+
+# Debug
+# import pdb; pdb.set_trace()
+
+# Run pipeline classifier
+pipeline.fit(train_data, train_target)
+y = pipeline.predict(test_data)
+print(classification_report(y, test_target))
