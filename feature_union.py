@@ -135,7 +135,6 @@ pipeline = Pipeline([
             ('body_bow', Pipeline([
                 ('selector', ItemSelector(key='text')),
                 ('tfidf', TfidfVectorizer()),
-                ('best', TruncatedSVD(n_components=50)),
             ])),
 
             # # Pipeline for pulling ad hoc features from post's body
@@ -156,7 +155,7 @@ pipeline = Pipeline([
     )),
 
     # Use a SVC classifier on the combined features
-    ('sgd', SGDClassifier(loss='log', penalty='l2', shuffle=True)),
+    ('sgd', SGDClassifier()),
 ])
 
 train = list(csv.DictReader(open('data/train_multi.csv', 'r')))
