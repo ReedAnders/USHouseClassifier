@@ -30,7 +30,7 @@ class Featurizer:
         # lemma_string=self.stemmer_unigram(text)
         length = ' ' + str(len(pos_tok))
         bigrams = self.word_ngram(text,2)
-        result =  length + bigrams
+        result =  length + bigrams + lemma_string
 
         return result
         

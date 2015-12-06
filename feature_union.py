@@ -138,11 +138,13 @@ class SubjectBodyExtractor(BaseEstimator, TransformerMixin):
     def transform(self, posts):
         # posts = ast.literal_eval(posts)
         features = np.recarray(shape=(len(posts),),
-                               dtype=[('text', object), ('feature_1', object)])
+                               dtype=[('text', object), ('state', object), ('party', object) ,('name', object)])
 
         for ii in range(len(posts)):
             features['text'][ii] = self.textFeatureExtractor(posts[ii][0])
-            features['feature_1'][ii] = posts[ii][1] 
+            features['state'][ii] = posts[ii][1] 
+            features['party'][ii] = posts[ii][2]
+            features['name'][ii] = posts[ii][3]  
        
         return features
 
@@ -156,9 +158,19 @@ pipeline = Pipeline([
         transformer_list=[
 
             # # Pipeline for pulling features from the post's subject line
-            ('subject', Pipeline([
-                ('selector', ItemSelector(key='feature_1')),
-                ('tfidf', TfidfVectorizer(min_df=50)),
+            ('state', Pipeline([
+                ('selector', ItemSelector(key='state')),
+                ('tfidf', TfidfVectorizer()),
+            ])),
+
+            ('party', Pipeline([
+                ('selector', ItemSelector(key='party')),
+                ('tfidf', TfidfVectorizer()),
+            ])),
+
+            ('name', Pipeline([
+                ('selector', ItemSelector(key='name')),
+                ('tfidf', TfidfVectorizer()),
             ])),
 
             # Pipeline for standard bag-of-words model for body
