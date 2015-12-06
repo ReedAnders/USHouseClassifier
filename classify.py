@@ -27,10 +27,10 @@ class Featurizer:
         # for ii in pos_li:
         #     pos = pos + ' ' + ii[1]
         POS_string=self.POS_converter(text)
-        lemma_string=self.stemmer_unigram(text)
+        # lemma_string=self.stemmer_unigram(text)
         length = ' ' + str(len(pos_tok))
         bigrams = self.word_ngram(text,2)
-        result =  length + bigrams + lemma_string
+        result =  length + bigrams
 
         return result
         

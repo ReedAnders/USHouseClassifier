@@ -31,6 +31,8 @@ from __future__ import print_function
 import numpy as np
 import csv
 import ast
+import nltk
+import re
 
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.datasets import fetch_20newsgroups
@@ -84,18 +86,6 @@ class ItemSelector(BaseEstimator, TransformerMixin):
         return data_dict[self.key]
 
 
-class TextStats(BaseEstimator, TransformerMixin):
-    """Extract features from each document for DictVectorizer"""
-
-    def fit(self, x, y=None):
-        return self
-
-    def transform(self, posts):
-        return [{'length': len(text),
-                 'num_sentences': text.count('.')}
-                for text in posts]
-
-
 class SubjectBodyExtractor(BaseEstimator, TransformerMixin):
     """Extract the subject & body from a usenet post in a single pass.
 
@@ -105,13 +95,53 @@ class SubjectBodyExtractor(BaseEstimator, TransformerMixin):
     def fit(self, x, y=None):
         return self
 
+    def textFeatureExtractor(self, text):
+        text = re.sub(r'[^\w\s]',' ',text)
+        pos_tok = nltk.word_tokenize(text)
+        POS_string=self.POS_converter(text)
+        lemma_string=self.stemmer_unigram(text)
+        length = ' ' + str(len(pos_tok))
+        bigrams = self.word_ngram(text,2)
+        result =  length + bigrams + lemma_string
+
+        return result
+
+    def POS_converter(self,text):
+        POS_list=nltk.pos_tag(text)
+        PoS=[item[1] for item in POS_list]
+        string = ' '.join(PoS)
+        return string
+
+    def stemmer_unigram(self,token):
+        stemmer = nltk.PorterStemmer()
+        token=token.split()
+        base = [stemmer.stem(t) for t in token]
+        string=' '.join(base)
+        return string
+
+    def word_ngram(self,token,N):
+        if N < 2: return 'please give a number bigger than one'
+        else:
+            token = token.split(' ')
+            output = []
+            for m in range(2,N+1):
+                for i in range(len(token)-m+1):
+                    output.append(token[i:i+m])
+            o=[]
+            for item in output:
+                if len(item)>=2:
+                    o.append(''.join(item))
+                else:o.append(item[0])
+            o=' '.join(o)
+            return o    
+
     def transform(self, posts):
         # posts = ast.literal_eval(posts)
         features = np.recarray(shape=(len(posts),),
                                dtype=[('text', object), ('feature_1', object)])
 
         for ii in range(len(posts)):
-            features['text'][ii] = posts[ii][0]
+            features['text'][ii] = self.textFeatureExtractor(posts[ii][0])
             features['feature_1'][ii] = posts[ii][1] 
        
         return features
