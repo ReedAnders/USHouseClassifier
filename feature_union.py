@@ -44,7 +44,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import classification_report
 from sklearn.pipeline import FeatureUnion
 from sklearn.pipeline import Pipeline
-from sklearn.linear_model import SGDClassifier
+from sklearn.linear_model import SGDClassifier, LogisticRegression
 
 
 class ItemSelector(BaseEstimator, TransformerMixin):
@@ -138,7 +138,10 @@ class SubjectBodyExtractor(BaseEstimator, TransformerMixin):
     def transform(self, posts):
         # posts = ast.literal_eval(posts)
         features = np.recarray(shape=(len(posts),),
-                               dtype=[('text', object), ('state', object), ('party', object) ,('name', object)])
+                               dtype=[('text', object), 
+                                      ('state', object), 
+                                      ('party', object),
+                                      ('name', object)])
 
         for ii in range(len(posts)):
             features['text'][ii] = self.textFeatureExtractor(posts[ii][0])
