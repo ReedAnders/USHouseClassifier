@@ -1,3 +1,5 @@
+# Run with $scrapy runspider textSpider.py
+
 import scrapy
 import json
 import re
@@ -40,12 +42,12 @@ class BlogSpider(scrapy.Spider):
     def dump_data(self):
 
         # Save combined dictionary as CSV
-        o = DictWriter(open("train.csv", 'w'), ["No.", "Label", "Text", "State", "Party", "NameFull"])
-        o.writeheader()
-        for BillNum in labels.keys():
-            if billText[BillNum]:
-                d = {'No.':BillNum , 'Label':labels[BillNum] , 'Text':billText[BillNum] , 'State':billState[BillNum] , 'Party':billParty[BillNum] , 'NameFull':billNameFull[BillNum]}
-                o.writerow(d)
+        # o = DictWriter(open("train.csv", 'w'), ["No.", "Label", "Text", "State", "Party", "NameFull"])
+        # o.writeheader()
+        # for BillNum in labels.keys():
+        #     if billText[BillNum]:
+        #         d = {'No.':BillNum , 'Label':labels[BillNum] , 'Text':billText[BillNum] , 'State':billState[BillNum] , 'Party':billParty[BillNum] , 'NameFull':billNameFull[BillNum]}
+        #         o.writerow(d)
                 
         with open('billText_data.json', 'wb') as fp:
             json.dump(self.seed_list, fp, indent=4, sort_keys=True, ensure_ascii=False)

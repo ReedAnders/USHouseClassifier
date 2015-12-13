@@ -1,5 +1,8 @@
 from csv import DictReader, DictWriter
+import csv, sys
 import re
+
+csv.field_size_limit(sys.maxsize)
 
 train = list(DictReader(open("train.csv"),'r'))
 

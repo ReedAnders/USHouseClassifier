@@ -33,6 +33,7 @@ import csv
 import ast
 import nltk
 import re
+import sys 
 
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.datasets import fetch_20newsgroups
@@ -46,6 +47,7 @@ from sklearn.pipeline import FeatureUnion
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import SGDClassifier, LogisticRegression
 
+csv.field_size_limit(sys.maxsize)
 
 class ItemSelector(BaseEstimator, TransformerMixin):
     """For data grouped by feature, select subset of data at a provided key.
