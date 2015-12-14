@@ -1,40 +1,32 @@
 from csv import DictReader, DictWriter
+import csv
 import re
 
-votes = list(DictReader(open("tgraves13thcongress.csv", 'r')))
-bills = list(DictReader(open("bills93-113.csv", 'r')))
+# votes = list(DictReader(open("../VotingData/ALABAMA1BONNER200.csv", 'r')))
+# bills = list(DictReader(open("bills93-113.csv", 'r')))
+
+votes = list(open("../VotingData/ALABAMA1BONNER200.csv", 'r'))
 
 labels = {}
-for line in votes:
-	BoolVote = None
-	if line['Indiv.Vote'] == 'Yea':
-		BoolVote = True
-	if line['Indiv.Vote'] == 'Nay':
-		BoolVote = False
-	if BoolVote == None:
-		continue
-
-	BillNum = re.search(r"\d+", line['Bill No.'])
-
-	if BillNum:
-		labels.update({BillNum.group():BoolVote})
-
 billText = {}
-billState = {}
-billParty = {}
-billNameFull = {}
 
-for line in bills:
-	if line['Cong'] == "113":
-		billText.update({line['BillNum']:line['Title']})
-		billState.update({line['BillNum']:line['State']})
-		billParty.update({line['BillNum']:line['Party']})
-		billNameFull.update({line['BillNum']:line['NameFull']})
+for line in votes:
+	temp = line.split('\t')
+	BoolVote = None
+	# import pdb; pdb.set_trace()
+	if temp[4] == 'Yea' or 'Co-sponsor':
+		BoolVote = True
+	if temp[4] == 'Nay':
+		BoolVote = False
+
+	if temp[1]:
+		labels.update({temp[1]:BoolVote})
+		billText.update({temp[1]:temp[2]})
+
 
 # Save combined dictionary as CSV
-o = DictWriter(open("train.csv", 'w'), ["No.", "Label", "Text", "State", "Party", "NameFull"])
+o = DictWriter(open("train.csv", 'w'), ["No.", "Label", "Text"])
 o.writeheader()
-for BillNum in labels.keys():
-	if billText[BillNum]:
-		d = {'No.':BillNum , 'Label':labels[BillNum] , 'Text':billText[BillNum] , 'State':billState[BillNum] , 'Party':billParty[BillNum] , 'NameFull':billNameFull[BillNum]}
-		o.writerow(d)
+for key in labels:
+	d = {'No.':key , 'Label':labels[key] , 'Text':billText[key]}
+	o.writerow(d)

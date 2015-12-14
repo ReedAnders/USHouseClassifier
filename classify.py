@@ -33,7 +33,7 @@ class Featurizer:
         # bigrams = self.word_ngram(text,2)
         # result =  length + bigrams + lemma_string
 
-        return result
+        return text
         
     def POS_converter(self,text):
         POS_list=nltk.pos_tag(text)
