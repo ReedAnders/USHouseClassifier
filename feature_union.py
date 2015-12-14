@@ -165,12 +165,10 @@ pipeline = Pipeline([
             # # Pipeline for pulling features from the post's subject line
             ('state', Pipeline([
                 ('selector', ItemSelector(key='state')),
-                ('tfidf', TfidfVectorizer()),
             ])),
 
             ('party', Pipeline([
                 ('selector', ItemSelector(key='party')),
-                ('tfidf', TfidfVectorizer()),
             ])),
 
             ('name', Pipeline([
@@ -179,32 +177,20 @@ pipeline = Pipeline([
             ])),
 
             # Pipeline for standard bag-of-words model for body
-            ('body_bow', Pipeline([
+            ('bill_text', Pipeline([
                 ('selector', ItemSelector(key='text')),
                 ('tfidf', TfidfVectorizer()),
             ])),
-
-            # # Pipeline for pulling ad hoc features from post's body
-            # ('body_stats', Pipeline([
-            #     ('selector', ItemSelector(key='body')),
-            #     ('stats', TextStats()),  # returns a list of dicts
-            #     ('vect', DictVectorizer()),  # list of dicts -> feature matrix
-            # ])),
 
         ],
 
         # weight components in FeatureUnion
         transformer_weights={
             # 'subject': 0.8,
-            'body_bow': .9,
+            'bill_text': .9,
             # 'body_stats': 1.0,
         },
     )),
-
-    # Use a LR classifier on the combined features
-    # (penalty='l2', dual=False, tol=0.0001, C=1.0, fit_intercept=True, 
-    # intercept_scaling=1, class_weight=None, random_state=None, solver='liblinear', 
-    # max_iter=100, multi_class='ovr', verbose=0, warm_start=False, n_jobs=1)
     ('sgd', LogisticRegression(penalty='l1')),
 ])
 
