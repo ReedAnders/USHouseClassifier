@@ -25,7 +25,7 @@ for row in train:
 
 	data.append(row_data)
 
-train_count = len(data)*0.66
+train_count = len(data)*0.75
 
 target_train = []
 data_train = []

@@ -1,7 +1,7 @@
 from csv import DictReader, DictWriter
 
 import numpy as np
-import nltk, re
+import nltk, re, sys, csv
 from numpy import array
 from nltk.stem import *
 
@@ -12,6 +12,7 @@ from sklearn.linear_model import SGDClassifier
 kTARGET_FIELD = 'Label'
 kTEXT_FIELD = 'Text'
 
+csv.field_size_limit(sys.maxsize)
 
 class Featurizer:
     def __init__(self):
@@ -22,15 +23,15 @@ class Featurizer:
         text = re.sub(r'[^\w\s]',' ',text)
 
         # pos = ''
-        pos_tok = nltk.word_tokenize(text)
-        # pos_li = nltk.pos_tag(pos_tok)
-        # for ii in pos_li:
-        #     pos = pos + ' ' + ii[1]
-        POS_string=self.POS_converter(text)
+        # pos_tok = nltk.word_tokenize(text)
+        # # pos_li = nltk.pos_tag(pos_tok)
+        # # for ii in pos_li:
+        # #     pos = pos + ' ' + ii[1]
+        # POS_string=self.POS_converter(text)
         # lemma_string=self.stemmer_unigram(text)
-        length = ' ' + str(len(pos_tok))
-        bigrams = self.word_ngram(text,2)
-        result =  length + bigrams + lemma_string
+        # length = ' ' + str(len(pos_tok))
+        # bigrams = self.word_ngram(text,2)
+        # result =  length + bigrams + lemma_string
 
         return result
         
@@ -84,8 +85,8 @@ class Featurizer:
 if __name__ == "__main__":
 
     # Cast to list to keep it all in memory
-    train = list(DictReader(open("train.csv", 'r')))
-    test = list(DictReader(open("test.csv", 'r')))
+    train = list(DictReader(open("data/train.csv", 'r')))
+    # test = list(DictReader(open("test.csv", 'r')))
 
     feat = Featurizer()
 

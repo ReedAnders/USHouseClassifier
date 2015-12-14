@@ -99,14 +99,14 @@ class SubjectBodyExtractor(BaseEstimator, TransformerMixin):
 
     def textFeatureExtractor(self, text):
         text = re.sub(r'[^\w\s]',' ',text)
-        pos_tok = nltk.word_tokenize(text)
-        POS_string=self.POS_converter(text)
-        lemma_string=self.stemmer_unigram(text)
-        length = ' ' + str(len(pos_tok))
-        bigrams = self.word_ngram(text,2)
-        result =  length + bigrams + lemma_string
+        # pos_tok = nltk.word_tokenize(text)
+        # POS_string=self.POS_converter(text)
+        # lemma_string=self.stemmer_unigram(text)
+        # length = ' ' + str(len(pos_tok))
+        # bigrams = self.word_ngram(text,2)
+        # result =  length + bigrams + lemma_string
 
-        return result
+        return text
 
     def POS_converter(self,text):
         POS_list=nltk.pos_tag(text)
@@ -196,13 +196,16 @@ pipeline = Pipeline([
         # weight components in FeatureUnion
         transformer_weights={
             # 'subject': 0.8,
-            'body_bow': 1.0,
+            'body_bow': .9,
             # 'body_stats': 1.0,
         },
     )),
 
-    # Use a SVC classifier on the combined features
-    ('sgd', SGDClassifier()),
+    # Use a LR classifier on the combined features
+    # (penalty='l2', dual=False, tol=0.0001, C=1.0, fit_intercept=True, 
+    # intercept_scaling=1, class_weight=None, random_state=None, solver='liblinear', 
+    # max_iter=100, multi_class='ovr', verbose=0, warm_start=False, n_jobs=1)
+    ('sgd', LogisticRegression(penalty='l1')),
 ])
 
 train = list(csv.DictReader(open('data/train_multi.csv', 'r')))
