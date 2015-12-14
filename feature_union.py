@@ -179,7 +179,7 @@ pipeline = Pipeline([
             # Pipeline for standard bag-of-words model for body
             ('bill_text', Pipeline([
                 ('selector', ItemSelector(key='text')),
-                ('tfidf', TfidfVectorizer()),
+                ('tfidf', TfidfVectorizer(stop_words='english', ngram_range=(1,2), max_df=0.7)),
             ])),
 
         ],
